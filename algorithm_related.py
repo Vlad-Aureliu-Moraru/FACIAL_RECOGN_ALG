@@ -4,15 +4,13 @@ from statistics import mode
 from statistics import StatisticsError
 import matplotlib.pyplot as plt
 import cv2
-import random
+import time 
 
 #fixed data
 data_path = 'orl/' 
 h, w = 112, 92
 num_pixels = h * w          
 num_persons = 40
-#num_train_per_person = 10
-#num_total_train = num_persons * num_train_per_person  
 
 
 def displayImages(poza_test,knn_result,nn_result):
@@ -62,8 +60,6 @@ def constructTrainingMatrix(num_persons,num_img_per_person):
                 coloane_B.append( img_vector[:, 0])
                 labels_B.append(i)
                 countB+=1
-    print(count)
-    print(countB)
 
     A = np.column_stack(coloane_A)
     B = np.column_stack(coloane_B)
@@ -73,6 +69,7 @@ def constructTrainingMatrix(num_persons,num_img_per_person):
 
 
 def NN(pozaTest,A,norma):
+    start = time.time()
     z = np.zeros(A[0].size)
     for i in range (0,A[0].size):
         if(norma==2):            
@@ -83,11 +80,13 @@ def NN(pozaTest,A,norma):
             z[i] = np.linalg.norm(pozaTest - A[:,i],np.inf)
         else:
             return
+    end = time.time()
 
     io = np.argmin(z)
-    return io
+    return io,end-start
 
 def kNN(pozaTest,A,labels_A,norma,k=3):
+    start = time.time()
     z = np.zeros(A[0].size)
     for i in range (0,A[0].size):
         if(norma==2):            
@@ -105,6 +104,7 @@ def kNN(pozaTest,A,labels_A,norma,k=3):
         po = mode(indici_k)
     except StatisticsError:
         po = indici_k[0]
+    end = time.time()
     
-    return po,indici[0]
+    return po,indici[0],end-start
 

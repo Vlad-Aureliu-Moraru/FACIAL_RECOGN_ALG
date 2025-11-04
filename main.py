@@ -1,6 +1,5 @@
 import algorithm_related as alg
 import fileResultsWriter as frw
-import matplotlib.pyplot as plt
 import time 
 h, w = 112, 92
 
@@ -13,41 +12,39 @@ knn_count_correct = 0
 nn_result_array = []
 knn_result_array = []
 
+knn_timetaken_array = []
+nn_timetaken_array = []
+
 person_num = B.shape[1]
 start = time.time()
 for i in range (int(person_num)):
     vectorized_img = B[:,i]
     poza_test = vectorized_img.reshape(h, w)
-    label,io = alg.kNN(vectorized_img, A,labels_A, 2, 3)  
+    label,io,knnTime = alg.kNN(vectorized_img, A,labels_A, 2, 3)  
     knn_result = A[:, io].reshape(h, w)
+    knn_timetaken_array.append(knnTime)
     
     if label == labels_B[i]:
-        knn_result_array.append(True)
         knn_count_correct+=1
-    else:
-        knn_result_array.append(False)
-    i1 =alg.NN(vectorized_img, A, 2)       
+    i1,nnTime =alg.NN(vectorized_img, A, 2)       
     nn_result = A[:, i1].reshape(h, w)
-
+    nn_timetaken_array.append(nnTime)
     if labels_A[i1] == labels_B[i]:
-        nn_result_array.append(True)
         nn_count_correct+=1
-    else:
-        nn_result_array.append(False)
     
 end = time.time()
-frw.append_results(nn_result_array,knn_result_array)
-total_avg_nn,total_avg_knn = frw.read_and_average()
 timpul_de_executie = end-start
 nn_rate = nn_count_correct / B.shape[1]
 knn_rate = knn_count_correct / B.shape[1]
 
-print("---=====STATISTICA=====---")
-print(f"• Timpul de executare al algoritmului pentru {person_num:.0f} persoane {timpul_de_executie:.4f}s")
-print(f"• Timpul Aproximat De Executie Pentru Procesarea Unei Imagini {timpul_de_executie/person_num:.2f}s")
-print(f"• Matricea De Antrenare Contine : {400-person_num:.0f} imagini ")
-print(f"• Rata de Recunoastere Pentru Acest Run (NN): {nn_rate*100:.2f}")
-print(f"• Rata de Recunoastere Pentru Acest Run (kNN): {knn_rate*100:.2f}")
+print("┌ STATISTICA")
+print(f"├ Timpul de executare al algoritmului pentru {person_num:.0f} persoane  : {timpul_de_executie:.4f}s")
+print(f"├ Timpul Aproximat De Executie Pentru Procesarea Unei Img : {timpul_de_executie/person_num:.2f}s")
+print(f"├  Matricea De Antrenare Contine\t : {400-person_num:.0f} imagini ")
+print(f"├  Matricea De Test Contine\t\t : {person_num} imagini ")
+print(f"├ Rata de Recunoastere Pentru Acest Run (NN) : {nn_rate*100:.2f}%")
+print(f"└ Rata de Recunoastere Pentru Acest Run (kNN): {knn_rate*100:.2f}%")
+frw.plot_execution_times(nn_timetaken_array,knn_timetaken_array)
 
 
 #alg.displayImages(poza_test,knn_result,nn_result)
