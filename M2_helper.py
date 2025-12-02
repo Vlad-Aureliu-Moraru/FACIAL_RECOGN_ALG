@@ -215,7 +215,7 @@ def run_single_eigenface(photo_index, frame_to_add_graphs, procentage, K_var,nor
     axs[1].axis('off')
 
     axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Found")
+    axs[2].set_title("Poza Gasita")
     axs[2].axis('off')
 
     plt.tight_layout()
@@ -223,7 +223,6 @@ def run_single_eigenface(photo_index, frame_to_add_graphs, procentage, K_var,nor
     canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
     canvas.draw()
     canvas.get_tk_widget().pack(fill='both', expand=True)
-    print(f"Ran nn ? {knn} norm ? {norma_val} knn_k_val {knn_k_val}")
 def run_single_eigenface_classrep(photo_index, frame_to_add_graphs, procentage, K_var,norma_val=1,knn_k_val=1,knn=False):
     if procentage == '60%':
         proc_value = 6
@@ -274,7 +273,7 @@ def run_single_eigenface_classrep(photo_index, frame_to_add_graphs, procentage, 
     axs[1].axis('off')
 
     axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Found")
+    axs[2].set_title("Poza Gasita")
     axs[2].axis('off')
 
     plt.tight_layout()
@@ -334,7 +333,7 @@ def run_single_lanczos(photo_index, frame_to_add_graphs, procentage, K_var,norma
     axs[1].axis('off')
 
     axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Found")
+    axs[2].set_title("Poza Gasita")
     axs[2].axis('off')
 
     plt.tight_layout()
@@ -381,21 +380,21 @@ def display_graphs_based_on_text_file(frame_to_add_graphs):
             fig.suptitle(file_path.replace("_", " ").replace(".txt",""), fontsize=14, weight='bold')
 
             axs[0].plot(Ks, accuracies, marker='o', linestyle='-', color='tab:blue')
-            axs[0].set_title("Recognition Accuracy (%)")
+            axs[0].set_title("Rata de Recunoastere (%)")
             axs[0].set_xlabel("K")
-            axs[0].set_ylabel("Accuracy")
+            axs[0].set_ylabel("RR")
             axs[0].grid(True)
 
             axs[1].plot(Ks, avg_times, marker='s', linestyle='--', color='tab:green')
-            axs[1].set_title("Avg Recognition Time (s)")
+            axs[1].set_title("Timp med. recunoastere (s)")
             axs[1].set_xlabel("K")
-            axs[1].set_ylabel("Time per image")
+            axs[1].set_ylabel("Timp pe imagine")
             axs[1].grid(True)
 
             axs[2].plot(Ks, preprocessing_times, marker='^', linestyle='-.', color='tab:red')
-            axs[2].set_title("Preprocessing Time (s)")
+            axs[2].set_title("Timp Preprocesare (s)")
             axs[2].set_xlabel("K")
-            axs[2].set_ylabel("Time")
+            axs[2].set_ylabel("Timp")
             axs[2].grid(True)
 
             plt.tight_layout(rect=[0, 0, 1, 0.95])

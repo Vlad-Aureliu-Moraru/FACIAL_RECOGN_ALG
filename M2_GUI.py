@@ -13,7 +13,7 @@ control_panel.place(x=0, y=0, width=430, height=1000)
 
 # ---------- Graphs Panel ----------
 graph_panel= ttk.Frame(window, relief=RAISED, borderwidth=1)
-graph_panel.place(x=670, y=0, width=1000, height=250)
+graph_panel.place(x=670, y=0, width=1200, height=250)
 
 # ---------- Graphs_statistic Panel ----------
 graph_canvas = Canvas(window, bg="white")
@@ -86,7 +86,7 @@ search_algo_combo.place(x=280, y=120)
 norm_label = ttk.Label(control_panel, text="Norma :", width=10, wraplength=300,font=("Arial",10))
 norm_label.place(x=280, y=140)
 norm_combo = ttk.Combobox(control_panel, width=3, textvariable=norm_algo_var, state="readonly",font=("Arial",12))
-norm_combo['values'] = ('1', '2','3')
+norm_combo['values'] = ('1', '2','inf','cos')
 norm_combo.current(0)  
 norm_combo.place(x=280, y=160)
 
@@ -127,15 +127,16 @@ preprocesing_label.place(x=10,y=450)
 custom_font = ("Helvetica", 16, "bold italic")
 
 def run_algorithm():
-    print("Training percentage:", train_var.get())
-    print("Algorithm type:", algo_var.get())
-    print("K var :",k_var.get())
-    print("knn_k_var ", knn_k_var.get())
-    print("search_algo_var", search_algo_var.get())
     usingKNN=search_algo_var.get()=='kNN'
-    print("search_algo_var", usingKNN)
+    int_norm_var = 1;
+    if norm_algo_var.get() == '2':
+        int_norm_var=2
+    elif norm_algo_var.get() =='inf':
+        int_norm_var=3
+    elif norm_algo_var.get() =='cos':
+        int_norm_var=4
     if algo_var.get() == 'Eigenfaces clasic':
-        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_eigenfaces(train_var.get(),k_var.get(),int(norm_algo_var.get()),int(knn_k_var.get()),usingKNN)
+        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_eigenfaces(train_var.get(),k_var.get(),int_norm_var,int(knn_k_var.get()),usingKNN)
         A_size_label.config(text= f"A poze = {A_size}")
         B_size_label.config(text= f"B poze = {B_size}")
         avg_time_label.config(text= f"Timpul mediu de recunoastere = {avg_time:.4f} sec")
@@ -143,14 +144,14 @@ def run_algorithm():
         preprocesing_label.config(text= f"Timpul de preprocesare = {time_extract:.2f} sec")
 
     elif algo_var.get()=='Eigenfaces cu repr. de clasa':
-        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_eigenfaces_class_rep(train_var.get(),k_var.get(),int(norm_algo_var.get()),int(knn_k_var.get()),usingKNN)
+        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_eigenfaces_class_rep(train_var.get(),k_var.get(),int_norm_var,int(knn_k_var.get()),usingKNN)
         A_size_label.config(text= f"A poze = {A_size}")
         B_size_label.config(text= f"B poze = {B_size}")
         avg_time_label.config(text= f"Timpul mediu de recunoastere = {avg_time:.4f} sec")
         correctitude_label.config(text= f"Rata de identificare = {corect*100:.2f}%")
         preprocesing_label.config(text= f"Timpul de preprocesare = {time_extract:.2f} sec")
     elif algo_var.get()=='Lanczos':
-        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_lanczos(train_var.get(),k_var.get(),int(norm_algo_var.get()),int(knn_k_var.get()),usingKNN)
+        A_size ,B_size ,corect,avg_time,time_extract= m2h.run_lanczos(train_var.get(),k_var.get(),int_norm_var,int(knn_k_var.get()),usingKNN)
         A_size_label.config(text= f"A poze = {A_size}")
         B_size_label.config(text= f"B poze = {B_size}")
         avg_time_label.config(text= f"Timpul mediu de recunoastere = {avg_time:.4f} sec")

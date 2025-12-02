@@ -78,6 +78,11 @@ def NN(pozaTest,A,norma):
             z[i] = np.linalg.norm(pozaTest - A[:,i],1)
         elif(norma==3):
             z[i] = np.linalg.norm(pozaTest - A[:,i],np.inf)
+        elif(norma==4):
+            a = pozaTest
+            b = A[:, i]
+            cos_sim = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-10)
+            z[i] = 1 - cos_sim
         else:
             return
     end = time.time()
@@ -95,6 +100,11 @@ def kNN(pozaTest,A,labels_A,norma,k=3):
             z[i] = np.linalg.norm(pozaTest - A[:,i],1)
         elif(norma==3):
             z[i] = np.linalg.norm(pozaTest - A[:,i],np.inf)
+        elif(norma==4):
+            a = pozaTest
+            b = A[:, i]
+            cos_sim = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-10)
+            z[i] = 1 - cos_sim
         else:
             return
     indici = np.argsort(z)
