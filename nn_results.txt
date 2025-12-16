@@ -1,0 +1,5 @@
+K	Training Images	Testing Images	Accuracy	Avg Recognition Time(s)
+1	320	80	96.25	0.008820
+2	320	80	95.00	0.007750
+3	320	80	23.75	0.009195
+4	320	80	92.50	0.014147
