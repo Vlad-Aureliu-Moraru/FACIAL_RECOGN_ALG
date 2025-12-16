@@ -57,7 +57,7 @@ def run_eigenfaces(procentage, K,norma_val=1,knn_k_val=1,knn=False):
     print("Correct predictions:", correct)
     print(f"Accuracy: {accuracy*100:.2f}%")
     print(f"Average recognition time: {avg_time:.6f} sec")
-    print(f"Ran nn ? {knn} norm ? {norma_val} knn_k_val {knn_k_val}")
+    print(f"norm {norma_val}")
 
     return A.shape[1],B.shape[1],accuracy, avg_time,time_extract
 def run_eigenfaces_class_rep(procentage, K,norma_val=1,knn_k_val=1,knn=False):
@@ -164,7 +164,84 @@ def run_lanczos(procentage, K,norma_val=1,knn_k_val=1,knn=False):
     print(f"Preprocessing time: {preprocessing_time:.6f} sec")
 
     return A.shape[1], num_tests, accuracy, avg_recognition_time, preprocessing_time
+def run_nn(procentage,norma_val):
+    if procentage == '60%':
+        proc_value = 6
+    elif procentage == '70%':
+        proc_value = 7
+    elif procentage == '80%':
+        proc_value = 8
+    else:
+        raise ValueError("Invalid percentage")
 
+    A, B, labels_A, labels_B = constructTrainingMatrix(
+        procentage_of_images_to_train=proc_value
+    )
+    nn_count_correct =0 
+    nn_timetaken = []  
+    person_num = B.shape[1]
+    start = time.time()
+
+    for i in range(person_num):
+        vectorized_img = B[:, i]
+        poza_test = vectorized_img.reshape(h, w)
+        idx, nnTime = NN(vectorized_img, A, norma_val)
+        nn_timetaken.append(nnTime)
+        if labels_A[idx] == labels_B[i]:
+            nn_count_correct += 1
+
+    end = time.time()
+    timpul_de_executie = end - start
+
+    nn_rate = nn_count_correct / person_num
+    avg_recognition_time = timpul_de_executie/person_num
+
+    print("┌ STATISTICA")
+    print(f"├ Timpul total de executare pentru {person_num} persoane: {timpul_de_executie:.4f}s")
+    print(f"├ Timpul mediu per imagine: {timpul_de_executie/person_num:.4f}s")
+    print(f"├  Matricea de antrenare conține: {400-person_num} imagini")
+    print(f"├  Matricea de test conține: {person_num} imagini")
+    print("├─────────── Rezultate NN ───────────")
+    print(f"│ Norma {norma_val}: {nn_rate*100:.2f}%")
+    print("└─────────────────────────────────────")
+    return A.shape[1],person_num,nn_rate*100, avg_recognition_time
+def run_knn(procentage,norma_val,knn_k_val):
+    if procentage == '60%':
+        proc_value = 6
+    elif procentage == '70%':
+        proc_value = 7
+    elif procentage == '80%':
+        proc_value = 8
+    else:
+        raise ValueError("Invalid percentage")
+
+    A, B, labels_A, labels_B = constructTrainingMatrix(
+        procentage_of_images_to_train=proc_value
+    )
+    knn_count_correct = 0 
+    knn_timetaken = []
+    person_num = B.shape[1]
+    start = time.time()
+    for i in range(person_num):
+        vectorized_img = B[:, i]
+        label, io, knnTime = kNN(vectorized_img, A, labels_A,norma_val, knn_k_val)
+        knn_timetaken.append(knnTime)
+        if label == labels_B[i]:
+            knn_count_correct += 1
+
+    end = time.time()
+    timpul_de_executie = end - start
+    knn_rate =knn_count_correct / person_num 
+    avg_recognition_time = timpul_de_executie/person_num
+    print("┌ STATISTICA")
+    print(f"├ Timpul total de executare pentru {person_num} persoane: {timpul_de_executie:.4f}s")
+    print(f"├ Timpul mediu per imagine: {timpul_de_executie/person_num:.4f}s")
+    print(f"├  Matricea de antrenare conține: {400-person_num} imagini")
+    print(f"├  Matricea de test conține: {person_num} imagini")
+    print("├─────────── Rezultate kNN ───────────")
+    print(f"│ Norma {norma_val}, k={knn_k_val}: {knn_rate*100:.2f}%")
+    print("└─────────────────────────────────────")
+    return A.shape[1],person_num,knn_rate*100, avg_recognition_time
 
 def run_single_eigenface(photo_index, frame_to_add_graphs, procentage, K_var,norma_val=1,knn_k_val=1,knn=False):
     if procentage == '60%':
@@ -205,18 +282,13 @@ def run_single_eigenface(photo_index, frame_to_add_graphs, procentage, K_var,nor
     for widget in frame_to_add_graphs.winfo_children():
         widget.destroy()
 
-    fig, axs = plt.subplots(1, 3, figsize=(6, 2))
+    fig, axs = plt.subplots(1, 2, figsize=(6, 2))
     axs[0].imshow(original_img, cmap='gray')
     axs[0].set_title("Original")
     axs[0].axis('off')
-
-    axs[1].imshow(eigenface_img, cmap='gray')
-    axs[1].set_title("Eigenface")
+    axs[1].imshow(found_img, cmap='gray')
+    axs[1].set_title("Poza Gasita")
     axs[1].axis('off')
-
-    axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Poza Gasita")
-    axs[2].axis('off')
 
     plt.tight_layout()
 
@@ -263,18 +335,13 @@ def run_single_eigenface_classrep(photo_index, frame_to_add_graphs, procentage, 
     for widget in frame_to_add_graphs.winfo_children():
         widget.destroy()
 
-    fig, axs = plt.subplots(1, 3, figsize=(6, 2))
+    fig, axs = plt.subplots(1, 2, figsize=(6, 2))
     axs[0].imshow(original_img, cmap='gray')
     axs[0].set_title("Original")
     axs[0].axis('off')
-
-    axs[1].imshow(eigenface_img, cmap='gray')
-    axs[1].set_title("Eigenface")
+    axs[1].imshow(found_img, cmap='gray')
+    axs[1].set_title("Poza Gasita")
     axs[1].axis('off')
-
-    axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Poza Gasita")
-    axs[2].axis('off')
 
     plt.tight_layout()
 
@@ -323,24 +390,94 @@ def run_single_lanczos(photo_index, frame_to_add_graphs, procentage, K_var,norma
     for widget in frame_to_add_graphs.winfo_children():
         widget.destroy()
 
-    fig, axs = plt.subplots(1, 3, figsize=(6, 2))
+    fig, axs = plt.subplots(1, 2, figsize=(6, 2))
     axs[0].imshow(original_img, cmap='gray')
     axs[0].set_title("Original")
     axs[0].axis('off')
-
-    axs[1].imshow(eigenface_img, cmap='gray')
-    axs[1].set_title("Eigenface (Lanczos)")
+    axs[1].imshow(found_img, cmap='gray')
+    axs[1].set_title("Poza Gasita")
     axs[1].axis('off')
-
-    axs[2].imshow(found_img, cmap='gray')
-    axs[2].set_title("Poza Gasita")
-    axs[2].axis('off')
-
     plt.tight_layout()
 
     canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
     canvas.draw()
     canvas.get_tk_widget().pack(fill='both', expand=True)
+def run_single_nn(photo_index,frame_to_add_graphs,procentage,norma_val):
+    height = 112
+    width = 92
+    if procentage == '60%':
+        proc_value = 6
+    elif procentage == '70%':
+        proc_value = 7
+    elif procentage == '80%':
+        proc_value = 8
+    else:
+        raise ValueError("Invalid percentage")
+
+    A, B, labels_A, labels_B = constructTrainingMatrix(procentage_of_images_to_train=proc_value)
+    vectorized_img = B[:, photo_index]
+    idx, nnTime = NN(vectorized_img, A, norma_val)
+    if labels_A[idx] == labels_B[photo_index]:
+        pass
+    found_image = A[:,idx]
+
+    original_img = vectorized_img.reshape((height, width))
+    found_img = found_image.reshape((height, width))
+
+    for widget in frame_to_add_graphs.winfo_children():
+        widget.destroy()
+
+    fig, axs = plt.subplots(1, 2, figsize=(6, 2))
+    axs[0].imshow(original_img, cmap='gray')
+    axs[0].set_title("Original")
+    axs[0].axis('off')
+    axs[1].imshow(found_img, cmap='gray')
+    axs[1].set_title("Poza Gasita")
+    axs[1].axis('off')
+    plt.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill='both', expand=True)
+    print(f"NORM {norma_val} ")
+def run_single_knn(photo_index,frame_to_add_graphs,procentage,norma_val,knn_k_val):
+    height = 112
+    width = 92
+    if procentage == '60%':
+        proc_value = 6
+    elif procentage == '70%':
+        proc_value = 7
+    elif procentage == '80%':
+        proc_value = 8
+    else:
+        raise ValueError("Invalid percentage")
+
+    A, B, labels_A, labels_B = constructTrainingMatrix(procentage_of_images_to_train=proc_value)
+    vectorized_img = B[:, photo_index]
+    label, idx, knnTime = kNN(vectorized_img, A, labels_A,norma_val, knn_k_val)
+    if labels_A[idx] == labels_B[photo_index]:
+        pass
+    found_image = A[:,idx]
+
+    original_img = vectorized_img.reshape((height, width))
+    found_img = found_image.reshape((height, width))
+
+    for widget in frame_to_add_graphs.winfo_children():
+        widget.destroy()
+
+    fig, axs = plt.subplots(1, 2, figsize=(6, 2))
+    axs[0].imshow(original_img, cmap='gray')
+    axs[0].set_title("Original")
+    axs[0].axis('off')
+    axs[1].imshow(found_img, cmap='gray')
+    axs[1].set_title("Poza Gasita")
+    axs[1].axis('off')
+    plt.tight_layout()
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill='both', expand=True)
+    print(f"NORM {norma_val} K {knn_k_val}")
 
 
 def display_graphs_based_on_text_file(frame_to_add_graphs):
