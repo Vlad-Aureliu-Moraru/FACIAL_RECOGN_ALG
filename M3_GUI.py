@@ -17,8 +17,8 @@ def select_photos():
     for i in range(num_test_images):
         btn = Button(photo_panel, text=f"Photo {i+1}",
                      width=5, command=partial(run_single_test ,i,statistic_panel))
-        row = i //12
-        col = i % 12
+        row = i //20
+        col = i % 20
         btn.grid(row=row, column=col, padx=2, pady=3)
 
 def run_single_test(index,graph_panel):
@@ -146,8 +146,26 @@ def adapt_input_panel():
         calculeaza_button = ttk.Button(input_panel,text="Calculeaza",width=30,command=compute)
         calculeaza_button.pack(padx=5, pady=5, side=TOP)
 
+def display_statistic_for_alg():
+    print(f"{nn_norm_var.get()}")
+    alg_type = "eig"
+    if algo_var.get() == "NN":
+        alg_type = "nn"
+    elif algo_var.get() == "KNN":
+        alg_type = "knn"
+    elif algo_var.get() =='Lanczos' :
+        alg_type = "lan"
+    elif algo_var.get() =='Eigenfaces cu repr. de clasa':
+        alg_type = "eic"
+    elif algo_var.get() =='Eigenfaces clasic':
+        alg_type = "eig"
+    m2h.display_graphs_based_on_text_file(statistic_panel,nn_norm_var.get(),alg_type)
+    print(f"{nn_norm_var.get()}   {alg_type}")
+
+    
+
 window = Tk()
-window.geometry("900x840")
+window.geometry("1400x840") #+500
 window.title("ML Algoritmi")
 
 train_var = StringVar()  
@@ -159,7 +177,7 @@ algo_var = StringVar(value="NN")
 #blue ---------- Control Panel ----------
 
 control_panel = ttk.Frame(window, relief=RAISED, borderwidth=1)
-control_panel.place(x=20, y=20, width=860, height=100)
+control_panel.place(x=20, y=20, width=1360, height=100)
 
     # blue |---------- Split The DB----------
 
@@ -190,7 +208,7 @@ apply_alg_btn.place(x=530,y=10)
 
 search_photo_val= StringVar()  
 
-search_photo_label= ttk.Label(control_panel, text="Search :", width=10, wraplength=500,font=("Arial",12))
+search_photo_label= ttk.Label(control_panel, text="Cauta :", width=10, wraplength=500,font=("Arial",12))
 search_photo_label.place(x=530, y=50)
 
 search_text_box = Text(control_panel, height=1,width=10,font=("Arial",12))
@@ -199,10 +217,6 @@ search_text_box.place(x=600, y=50)
 search_btn = ttk.Button(control_panel,text=" ",width=5,command=search_photo)
 search_btn.place(x=700,y=50)
 
-    #blue| ---------- Show Statistics Button ----------
-
-show_statistic_btn = Button(control_panel, text="Statistica  ",width=8 )
-show_statistic_btn.place(x=770,y=9)
 
 # ---------- Single Photo Panel ----------
 
@@ -219,8 +233,8 @@ canvas.create_window((0, 0), window=photo_panel, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
 
 
-canvas.place(x=20, y=140, width=860, height=150)
-scrollbar.place(x=870, y=140, height=150)
+canvas.place(x=20, y=140, width=1360, height=150)
+scrollbar.place(x=1380, y=140, height=150)
 
 # ---------- input_panel ----------
 
@@ -231,14 +245,14 @@ input_panel.place(x=20, y=310, width=150, height=400)
 # ---------- statistic_panel ----------
 
 statistic_panel= ttk.Frame(window, relief=RAISED, borderwidth=1)
-statistic_panel.place(x=180, y=310, width=680, height=400)
+statistic_panel.place(x=180, y=310, width=1180, height=400)
 
 
 
 # ---------- Display Stats ----------
 
 display_stats_panel = ttk.Frame(window, relief=RAISED, borderwidth=1)
-display_stats_panel.place(x=20, y=720, width=860, height=100)
+display_stats_panel.place(x=20, y=720, width=1360, height=100)
 
 avg_time_label = ttk.Label(display_stats_panel,text="",foreground="blue",font=("Arial",11))
 avg_time_label.pack(padx=5, pady=5, side=TOP)
@@ -249,4 +263,9 @@ correctitude_label.pack(padx=5, pady=5, side=TOP)
 preprocesing_label = ttk.Label(display_stats_panel,text="",foreground="blue",font=("Arial",11))
 preprocesing_label.pack(padx=5, pady=5, side=TOP)
 
+
+    #blue| ---------- Show Statistics Button ----------
+
+show_statistic_btn = Button(control_panel, text="Statistica  ",width=8,command=display_statistic_for_alg)
+show_statistic_btn.place(x=770,y=9)
 window.mainloop()

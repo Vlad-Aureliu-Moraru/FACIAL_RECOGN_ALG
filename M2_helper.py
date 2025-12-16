@@ -5,6 +5,8 @@ import numpy as np
 import time
 import M2_EigenFaces as m2eig
 import M2_Lanczos as m2lan
+from collections import defaultdict
+from tkinter import ttk
 
 def run_eigenfaces(procentage, K,norma_val=1,knn_k_val=1,knn=False):
 
@@ -480,65 +482,161 @@ def run_single_knn(photo_index,frame_to_add_graphs,procentage,norma_val,knn_k_va
     print(f"NORM {norma_val} K {knn_k_val}")
 
 
-def display_graphs_based_on_text_file(frame_to_add_graphs):
-    files_to_read = [
-        "eigenfaces_results.txt",
-        "lanczos_results.txt",
-        "eigenfaces_class_rep_results.txt"
-    ]
+def display_graphs_based_on_text_file(frame_to_add_graphs, n, alg_type):
 
+    # ---------------- File selection ----------------
+    if alg_type == "nn":
+        file_path = "nn_results.txt"
+    elif alg_type == "knn":
+        file_path = "knn_results.txt"
+    elif alg_type == "eig":
+        file_path = f"eigen_faces_result_n{n}.txt"
+    elif alg_type == "eic":
+        file_path = f"eigen_faces_classrep_result_n{n}.txt"
+    elif alg_type == "lan":
+        file_path = f"lanczos_result_n{n}.txt"
+    else:
+        ttk.Label(frame_to_add_graphs, text="Unknown algorithm type").pack()
+        return
+
+    # ---------------- Clear frame ----------------
     for widget in frame_to_add_graphs.winfo_children():
         widget.destroy()
 
-    for file_path in files_to_read:
-        Ks = []
-        accuracies = []
-        avg_times = []
-        preprocessing_times = []
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
 
-        try:
-            with open(file_path, "r") as f:
-                lines = f.readlines()[1:]  
-                for line in lines:
-                    parts = line.strip().split("\t")
-                    if len(parts) < 6:
-                        continue
+        # ================= NN / KNN ==========================
+        if alg_type in ("nn", "knn"):
+            data = defaultdict(lambda: {
+                "x": [],      
+                "accuracy": [],
+                "time": []
+            })
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line.lower().startswith("norma"):
+                    continue
+
+                parts = line.split("\t")
+
+                try:
+                    norm = int(parts[0])
+
+                    if alg_type == "knn":
+                        x_val = int(parts[1])
+                        accuracy = float(parts[4])
+                        avg_time = float(parts[5])
+                        label = f"Norma {norm}"
+
+                    else:  # NN
+                        x_val = norm
+                        accuracy = float(parts[3])
+                        avg_time = float(parts[4])
+                        label = "NN"
+
+                except (ValueError, IndexError):
+                    continue
+
+                data[label]["x"].append(x_val)
+                data[label]["accuracy"].append(accuracy)
+                data[label]["time"].append(avg_time)
+
+            if not data:
+                ttk.Label(frame_to_add_graphs, text="No NN/KNN data found").pack()
+                return
+
+            fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+            fig.suptitle(alg_type.upper() + "Rezultate", fontsize=14, weight="bold")
+
+            # Rata de recunoastere plot
+            for label, values in data.items():
+                axs[0].plot(values["x"], values["accuracy"], marker="o", label=label)
+
+            axs[0].set_title("Rata de Recunoaștere (%)")
+            axs[0].set_xlabel("K" if alg_type == "knn" else "Norma")
+            axs[0].set_ylabel("Rata de recunoastere")
+            axs[0].grid(True)
+            axs[0].legend()
+
+            for label, values in data.items():
+                axs[1].plot(values["x"], values["time"], marker="s", label=label)
+
+            axs[1].set_title("Timp mediu de recunoaștere (s)")
+            axs[1].set_xlabel("K" if alg_type == "knn" else "Norma")
+            axs[1].set_ylabel("Timp / imagine")
+            axs[1].grid(True)
+            axs[1].legend()
+
+            plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+        # ================ EIG / EIC / LAN ====================
+        else:
+            Ks, accuracies, avg_times, preprocessing_times = [], [], [], []
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line.lower().startswith("k"):
+                    continue
+
+                parts = line.split("\t")
+                if len(parts) < 7:
+                    continue
+
+                try:
                     K = int(parts[0])
-                    accuracy = float(parts[3])
-                    avg_time = float(parts[4])
-                    preprocessing = float(parts[5])
+                    accuracy = float(parts[4])
+                    avg_time = float(parts[5])
+                    preprocessing = float(parts[6].replace("s", ""))
+                except ValueError:
+                    continue
 
-                    Ks.append(K)
-                    accuracies.append(accuracy)
-                    avg_times.append(avg_time)
-                    preprocessing_times.append(preprocessing)
+                Ks.append(K)
+                accuracies.append(accuracy)
+                avg_times.append(avg_time)
+                preprocessing_times.append(preprocessing)
+
+            if not Ks:
+                ttk.Label(frame_to_add_graphs, text="No EIG/EIC/LAN data found").pack()
+                return
 
             fig, axs = plt.subplots(1, 3, figsize=(12, 4))
-            fig.suptitle(file_path.replace("_", " ").replace(".txt",""), fontsize=14, weight='bold')
+            fig.suptitle(alg_type.upper() + f" Rezultate Norma:{n}", fontsize=14, weight="bold")
 
-            axs[0].plot(Ks, accuracies, marker='o', linestyle='-', color='tab:blue')
-            axs[0].set_title("Rata de Recunoastere (%)")
+            axs[0].plot(Ks, accuracies, marker="o")
+            axs[0].set_title("Rata de Recunoaștere (%)")
             axs[0].set_xlabel("K")
-            axs[0].set_ylabel("RR")
+            axs[0].set_ylabel("Rata de recunoastere")
             axs[0].grid(True)
 
-            axs[1].plot(Ks, avg_times, marker='s', linestyle='--', color='tab:green')
-            axs[1].set_title("Timp med. recunoastere (s)")
+            axs[1].plot(Ks, avg_times, marker="s")
+            axs[1].set_title("Timp mediu de recunoaștere (s)")
             axs[1].set_xlabel("K")
-            axs[1].set_ylabel("Timp pe imagine")
+            axs[1].set_ylabel("Timp / imagine")
             axs[1].grid(True)
 
-            axs[2].plot(Ks, preprocessing_times, marker='^', linestyle='-.', color='tab:red')
-            axs[2].set_title("Timp Preprocesare (s)")
+            axs[2].plot(Ks, preprocessing_times, marker="^")
+            axs[2].set_title("Timp de preprocesare (s)")
             axs[2].set_xlabel("K")
             axs[2].set_ylabel("Timp")
             axs[2].grid(True)
 
             plt.tight_layout(rect=[0, 0, 1, 0.95])
 
-            canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
-            canvas.draw()
-            canvas.get_tk_widget().pack(fill='both', expand=True)
+        # ---------------- Embed in Tkinter ----------------
+        canvas = FigureCanvasTkAgg(fig, master=frame_to_add_graphs)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True)
 
-        except FileNotFoundError:
-            print(f"File {file_path} not found.")
+    except FileNotFoundError:
+        ttk.Label(frame_to_add_graphs, text=f"File {file_path} not found").pack()
+    except Exception as e:
+        ttk.Label(frame_to_add_graphs, text=f"Error: {e}").pack()
