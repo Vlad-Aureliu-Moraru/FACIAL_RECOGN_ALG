@@ -1,0 +1,6 @@
+K	Training Images	Testing Images	Accuracy	Avg Recognition Time(s)	Preprocessing Time
+20	1	320	80	0.85	0.001463	1.121530s
+40	1	320	80	0.90	0.001382	1.721604s
+60	1	320	80	0.88	0.001284	2.680871s
+80	1	320	80	0.89	0.001324	3.439481s
+100	1	320	80	0.91	0.001350	4.304084s
